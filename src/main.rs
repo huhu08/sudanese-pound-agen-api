@@ -22,6 +22,11 @@ use handlers::ai_handler::ask_agent;
 async fn main() {
 
     dotenv().ok();
+println!(
+    "KEY = {:?}",
+    std::env::var("DEEPSEEK_API_KEY")
+);
+println!("Calling DeepSeek...");
 
     // println!(
     //     "PROJECT = {:?}",
