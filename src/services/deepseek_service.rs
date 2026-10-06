@@ -1,5 +1,8 @@
 use reqwest::Client;
-use serde_json::json;
+use serde_json::{
+    json,
+    Value
+};
 
 pub async fn ask_deepseek(
     question: String,
@@ -10,6 +13,11 @@ pub async fn ask_deepseek(
 
     let api_key =
         std::env::var("DEEPSEEK_API_KEY")?;
+
+    println!(
+        "KEY LOADED = {}",
+        !api_key.is_empty()
+    );
 
     let client = Client::new();
 
@@ -22,35 +30,28 @@ pub async fn ask_deepseek(
                 {
                     "role": "system",
                     "content":
-                    "أنت وكيل ذكاء اصطناعي متخصص في تحليل
-سعر صرف الجنيه السوداني مقابل الدولار الأمريكي.
+                    "أنت محلل متخصص في سوق صرف الدولار مقابل الجنيه السوداني.
 
-المستخدم يسأل فقط عن سوق الصرف السوداني.
+اعتمد على بيانات السوق الحالية فقط.
 
-اعتمد على السعر المرجعي ودرجة الثقة
-وملخص السوق.
+أعط إجابات عملية ومختصرة.
 
-أعط إجابة عملية ومختصرة.
+لا تطلب معلومات إضافية إلا إذا كانت ضرورية جداً.
 
-لا تطلب معلومات إضافية من المستخدم
-إلا إذا كانت ضرورية جداً.
-
-إذا سأل المستخدم:
+عندما يسأل المستخدم:
 هل الوقت مناسب للشراء؟
 
-فحلل وضع السوق الحالي مباشرة."
+قم بتحليل وضع السوق مباشرة."
                 },
                 {
                     "role": "user",
                     "content": format!(
                         "
-أنت تحلل سوق الدولار في السودان.
-
-السعر المرجعي الحالي:
+السعر المرجعي:
 {} جنيه سوداني للدولار
 
 درجة الثقة:
-{} %
+{}%
 
 ملخص السوق:
 {}
@@ -65,18 +66,34 @@ pub async fn ask_deepseek(
                     )
                 }
             ],
-            "temperature": 0.7
+            "temperature": 0.7,
+            "max_tokens": 800
         }))
         .send()
         .await?;
 
-    let value: serde_json::Value =
-        response.json().await?;
+    println!(
+        "STATUS => {}",
+        response.status()
+    );
+
+    let body =
+        response.text().await?;
+
+    println!(
+        "BODY => {}",
+        body
+    );
+
+    let value: Value =
+        serde_json::from_str(&body)?;
 
     let answer = value["choices"][0]
         ["message"]["content"]
         .as_str()
-        .unwrap_or("تعذر إنشاء التحليل")
+        .unwrap_or(
+            "تعذر الحصول على رد من DeepSeek"
+        )
         .to_string();
 
     Ok(answer)
