@@ -80,5 +80,4 @@ pub async fn ask_deepseek(
         .to_string();
 
     Ok(answer)
-    println!("DEEPSEEK VERSION 2");
 }
