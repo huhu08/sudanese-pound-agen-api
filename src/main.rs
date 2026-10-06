@@ -16,7 +16,7 @@ use handlers::report_handler::{
     parallel_rates,
     official_rates,
 };
-
+use handlers::ai_handler::ask_agent;
 
 #[tokio::main]
 async fn main() {
@@ -25,18 +25,7 @@ async fn main() {
 
     // println!(
     //     "PROJECT = {:?}",
-    //     std::env::var("SANITY_PROJECT_ID")
-    // );
 
-    // println!(
-    //     "DATASET = {:?}",
-    //     std::env::var("SANITY_DATASET")
-    // );
-
-    // println!(
-    //     "TOKEN = {:?}",
-    //     std::env::var("SANITY_TOKEN")
-    // );
     let app = Router::new()
 
     .route(
@@ -61,11 +50,16 @@ async fn main() {
     "/test-official",
     get(|| async { "OFFICIAL OK" })
 )
+
+    .route(
+    "/ask",
+    post(ask_agent)
+)
     .layer(
         CorsLayer::permissive()
     );
 
-    
+   
 
     // let listener =
     //     tokio::net::TcpListener::bind(

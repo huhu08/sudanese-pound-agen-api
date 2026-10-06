@@ -1,5 +1,9 @@
-use serde_json::Value;
 use reqwest::Client;
+
+use serde_json::{
+    json,
+    Value
+};
 
 pub async fn get_sources_from_sanity()
 -> Result<Value, reqwest::Error> {
@@ -36,4 +40,19 @@ pub async fn get_sources_from_sanity()
             .await?;
 
     Ok(result)
+
+}
+
+pub async fn save_question(
+    question: String,
+    answer: String
+)
+-> Result<(), reqwest::Error> {
+
+    println!("Question: {}", question);
+
+    println!("Answer: {}", answer);
+
+    Ok(())
+
 }
