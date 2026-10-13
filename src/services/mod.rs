@@ -3,3 +3,5 @@ pub mod market_analyzer;
 pub mod parallel_rate_collector;
 pub mod official_rate_collector;
 pub mod deepseek_service;
+pub mod scheduler;
+pub mod scraper_service;

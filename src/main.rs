@@ -2,7 +2,8 @@
 mod models;
 mod services;
 mod handlers;
-
+use services::scheduler::
+    update_market_data;
 use axum::{
     Router,
     routing::{get, post},
@@ -17,20 +18,18 @@ use handlers::report_handler::{
     official_rates,
 };
 use handlers::ai_handler::ask_agent;
-
+use tokio::time::{
+    sleep,
+    Duration
+};
 #[tokio::main]
 async fn main() {
-
     dotenv().ok();
-println!(
-    "KEY = {:?}",
-    std::env::var("DEEPSEEK_API_KEY")
-);
+
+
 println!("Calling DeepSeek...");
 
-    // println!(
-    //     "PROJECT = {:?}",
-
+    
     let app = Router::new()
 
     .route(
@@ -66,12 +65,12 @@ println!("Calling DeepSeek...");
 
    
 
-    // let listener =
-    //     tokio::net::TcpListener::bind(
-    //         "0.0.0.0:3000"
-    //     )
-    //     .await
-    //     .unwrap();
+use tokio::time::{
+    sleep,
+    Duration
+};
+
+   
     let port =
     std::env::var("PORT")
         .unwrap_or("3000".to_string());
@@ -83,9 +82,7 @@ let listener =
     .await
     .unwrap();
 
-    // println!(
-    //     "Server running on http://localhost:3000"
-    // );
+   
 
     axum::serve(
         listener,
@@ -93,4 +90,50 @@ let listener =
     )
     .await
     .unwrap();
+    tokio::spawn(async move {
+
+    loop {
+
+        println!(
+            "Updating market data..."
+        );
+
+        let _ =
+            update_market_data()
+                .await;
+
+        sleep(
+            Duration::from_secs(
+                60 * 60 * 8
+            )
+        )
+        .await;
+
+    }
+
+});
+// println!(
+//     "{} => {}",
+//     source_name,
+//     usd_rate
+// );
+
+tokio::spawn(async move {
+
+    loop {
+
+        update_market_data()
+            .await;
+
+        sleep(
+            Duration::from_secs(
+                60 * 60 * 8
+            )
+        )
+        .await;
+
+    }
+
+});
+
 }

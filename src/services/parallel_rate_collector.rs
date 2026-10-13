@@ -1,36 +1,82 @@
 use crate::models::rate::SourceRate;
 
+use crate::services::sanity_service::
+    get_sources_from_sanity;
+
 pub async fn collect_parallel_rates()
 -> Vec<SourceRate> {
 
-    vec![
+    let data =
+        match get_sources_from_sanity().await {
 
-        SourceRate {
-            source_name:
-                "ETCurrency".to_string(),
+            Ok(data) => data,
 
-            confidence: 90.0,
+            Err(err) => {
 
-            usd_rate: 2860.0,
-        },
+                println!(
+                    "SANITY ERROR => {:?}",
+                    err
+                );
 
-        SourceRate {
-            source_name:
-                "Jeeblay".to_string(),
+                return Vec::new();
+            }
+        };
 
-            confidence: 88.0,
+    println!(
+        "SANITY DATA => {}",
+        data
+    );
 
-            usd_rate: 2875.0,
-        },
+    let results =
+        data["result"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
 
-        SourceRate {
-            source_name:
-                "SudanCurrencies".to_string(),
+    let mut rates =
+        Vec::<SourceRate>::new();
 
-            confidence: 85.0,
+    for item in results {
 
-            usd_rate: 2855.0,
-        },
+        println!(
+            "ITEM => {:?}",
+            item
+        );
 
-    ]
+        let source_name =
+            item["title"]
+                .as_str()
+                .unwrap_or("Unknown")
+                .to_string();
+
+        let usd_rate =
+            item["usd_rate"]
+                .as_f64()
+                .unwrap_or(0.0);
+
+        let confidence =
+            item["confidence"]
+                .as_f64()
+                .unwrap_or(50.0);
+
+        println!(
+            "{} => {}",
+            source_name,
+            usd_rate
+        );
+
+        rates.push(
+            SourceRate {
+
+                source_name,
+
+                usd_rate,
+
+                confidence,
+
+            }
+        );
+    }
+
+    rates
 }
