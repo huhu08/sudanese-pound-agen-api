@@ -41,6 +41,7 @@ pub fn analyze_market(
             .map(|r| r.confidence)
             .sum::<f64>()
             / valid_rates.len() as f64;
+            
 
     ParallelMarketReport {
 
@@ -54,6 +55,8 @@ pub fn analyze_market(
         summary:
             "تم تحليل الأسعار بنجاح"
                 .to_string(),
+                
 
     }
+    
 }
