@@ -1,6 +1,15 @@
-
 use crate::models::rate::SourceRate;
 use crate::models::report::ParallelMarketReport;
+
+fn is_parallel_market(
+    source_name: &str,
+) -> bool {
+    source_name.contains("السوق")
+        || source_name.contains("جيب")
+        || source_name.contains("ET")
+        || source_name.contains("etcurrency")
+        || source_name.contains("Jeeblay")
+}
 
 pub fn analyze_market(
     rates: Vec<SourceRate>,
@@ -9,7 +18,12 @@ pub fn analyze_market(
     let valid_rates: Vec<&SourceRate> =
         rates
             .iter()
-            .filter(|r| r.usd_rate > 0.0)
+            .filter(|r| {
+                r.usd_rate > 0.0
+                && is_parallel_market(
+                    &r.source_name
+                )
+            })
             .collect();
 
     if valid_rates.is_empty() {
@@ -23,7 +37,7 @@ pub fn analyze_market(
             source_count: 0,
 
             summary:
-                "لا توجد أسعار صالحة للتحليل"
+                "لا توجد أسعار سوق موازي صالحة للتحليل"
                     .to_string(),
         };
     }
@@ -41,7 +55,11 @@ pub fn analyze_market(
             .map(|r| r.confidence)
             .sum::<f64>()
             / valid_rates.len() as f64;
-            
+
+    println!(
+        "PARALLEL MARKET AVG => {}",
+        accepted_rate
+    );
 
     ParallelMarketReport {
 
@@ -53,10 +71,9 @@ pub fn analyze_market(
             valid_rates.len(),
 
         summary:
-            "تم تحليل الأسعار بنجاح"
-                .to_string(),
-                
-
+            format!(
+                "تم احتساب متوسط السوق الموازي من {} مصدر",
+                valid_rates.len()
+            ),
     }
-    
 }
